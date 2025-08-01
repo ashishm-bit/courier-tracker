@@ -5,44 +5,96 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Courier Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Hide elements by default that are controlled by JS */
+      .hidden { display: none; }
+      /* Initially hide all tab sections */
+      .tab-section { display: none; }
+      /* Show the first tab by default */
+      #tab-operation { display: block; }
+    </style>
 </head>
 <body class="bg-gray-100 p-8">
 
   <div class="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-lg">
     <h1 class="text-3xl font-bold mb-6">Courier Tracker</h1>
 
-    <div class="mt-6">
-      <div class="flex justify-end mb-4">
-        <button onclick="exportToCSV()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Export to CSV</button>
+    <div class="flex justify-between items-center mb-4">
+      <button onclick="openModal()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add New Courier</button>
+      <button onclick="exportToCSV()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Export to CSV</button>
+    </div>
+
+    <div class="mb-4">
+      <button onclick="switchTab('operation', this)" class="tab-button bg-indigo-600 text-white px-4 py-2 rounded-l-md">Operation</button>
+      <button onclick="switchTab('procurement', this)" class="tab-button bg-gray-300 px-4 py-2">Procurement</button>
+      <button onclick="switchTab('reconciliation', this)" class="tab-button bg-gray-300 px-4 py-2 rounded-r-md">Reconciliation</button>
+    </div>
+
+    <div id="tab-operation" class="tab-section">
+      <h2 class="text-xl font-semibold mb-2">Operation</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Request ID</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Courier</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tracking ID</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty (Rec / Total)</th>
+              <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="courier-table-body" class="bg-white divide-y divide-gray-200">
+             </tbody>
+        </table>
       </div>
-    
-      <div id="tab-operation" class="tab-section">
-        <h2 class="text-xl font-semibold mb-2">Operation</h2>
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Request ID</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Courier</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tracking ID</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty (Rec / Total)</th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="courier-table-body" class="bg-white divide-y divide-gray-200"></tbody>
-          </table>
-        </div>
-      </div>
-    
-      <div id="tab-procurement" class="tab-section mt-8 border-t pt-6">
-        <h2 class="text-xl font-semibold mb-2">Procurement</h2>
-        <p class="text-gray-500">Procurement data (upcoming feature).</p>
-      </div>
-    
-      <div id="tab-reconciliation" class="tab-section mt-8 border-t pt-6">
-        <h2 class="text-xl font-semibold mb-2">Reconciliation</h2>
-        <p class="text-gray-500">Reconciliation data (upcoming feature).</p>
+    </div>
+
+    <div id="tab-procurement" class="tab-section hidden">
+      <h2 class="text-xl font-semibold mb-2">Procurement</h2>
+      <p class="text-gray-500">Procurement data (upcoming feature).</p>
+    </div>
+
+    <div id="tab-reconciliation" class="tab-section hidden">
+      <h2 class="text-xl font-semibold mb-2">Reconciliation</h2>
+      <p class="text-gray-500">Reconciliation data (upcoming feature).</p>
+    </div>
+  </div>
+
+  <div id="add-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+      <div class="mt-3 text-center">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Add New Courier</h3>
+        <form id="add-courier-form" class="mt-2 text-left">
+          <div class="mb-4">
+            <label for="requestId" class="block text-sm font-medium text-gray-700">Request ID</label>
+            <input type="text" id="requestId" name="requestId" class="mt-1 p-2 w-full border rounded-md">
+          </div>
+          <div class="mb-4">
+            <label for="vendorName" class="block text-sm font-medium text-gray-700">Vendor Name</label>
+            <input type="text" id="vendorName" name="vendorName" class="mt-1 p-2 w-full border rounded-md">
+          </div>
+          <div class="mb-4">
+            <label for="courierName" class="block text-sm font-medium text-gray-700">Courier Name</label>
+            <input type="text" id="courierName" name="courierName" class="mt-1 p-2 w-full border rounded-md">
+          </div>
+           <div class="mb-4">
+            <label for="trackingId" class="block text-sm font-medium text-gray-700">Tracking ID</label>
+            <input type="text" id="trackingId" name="trackingId" class="mt-1 p-2 w-full border rounded-md">
+          </div>
+          <div class="mb-4">
+            <label for="totalQuantity" class="block text-sm font-medium text-gray-700">Total Quantity</label>
+            <input type="number" id="totalQuantity" name="totalQuantity" class="mt-1 p-2 w-full border rounded-md">
+          </div>
+          <div class="items-center px-4 py-3">
+            <button id="submit-button" type="submit" class="w-full bg-blue-500 text-white text-base font-medium rounded-md shadow-sm px-4 py-2 hover:bg-blue-600">
+              Save Courier
+            </button>
+            <button id="cancel-button" type="button" onclick="closeModal()" class="w-full bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm px-4 py-2 mt-2 hover:bg-gray-300">
+              Cancel
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -52,9 +104,74 @@
 const db = {
   collection: () => ({
     get: () => Promise.resolve({ docs: [], forEach: () => {} }),
-    doc: () => ({ delete: () => Promise.resolve() })
+    doc: () => ({ delete: () => Promise.resolve() }),
+    // Add a mock 'add' function to simulate saving data
+    add: (data) => {
+        console.log("Saving to Firebase:", data);
+        return Promise.resolve({ id: `mock-${Date.now()}` });
+    }
   })
 };
+
+function openModal() {
+  document.getElementById('add-modal').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('add-modal').classList.add('hidden');
+  document.getElementById('add-courier-form').reset();
+}
+
+function switchTab(tabName, button) {
+  // Hide all tab content
+  document.querySelectorAll('.tab-section').forEach(div => div.classList.add('hidden'));
+  // Show the selected tab content
+  document.querySelector(`#tab-${tabName}`).classList.remove('hidden');
+
+  // Reset all tab button styles
+  document.querySelectorAll('.tab-button').forEach(btn => {
+    btn.classList.remove('bg-indigo-600', 'text-white');
+    btn.classList.add('bg-gray-300');
+  });
+  // Apply active styles to the clicked button
+  button.classList.remove('bg-gray-300');
+  button.classList.add('bg-indigo-600', 'text-white');
+}
+
+document.getElementById('add-courier-form').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent the form from reloading the page
+
+    const newCourier = {
+        requestId: document.getElementById('requestId').value,
+        vendorName: document.getElementById('vendorName').value,
+        courierName: document.getElementById('courierName').value,
+        trackingId: document.getElementById('trackingId').value,
+        totalQuantity: parseInt(document.getElementById('totalQuantity').value, 10),
+        quantityReceived: 0, // New entries start with 0 received
+        createdAt: new Date() // Optional: add a timestamp
+    };
+    
+    // Check for empty fields
+    if(!newCourier.requestId || !newCourier.vendorName || !newCourier.totalQuantity) {
+        alert("Please fill out at least Request ID, Vendor Name, and Total Quantity.");
+        return;
+    }
+
+    // Here you would save the data to your actual Firebase database
+    db.collection("couriers").add(newCourier)
+        .then((docRef) => {
+            console.log("Document written with ID: ", docRef.id);
+            alert("Courier added successfully! (Check console for details)");
+            closeModal();
+            // In a real application, you would re-fetch the data and re-render the table
+            // For now, we just close the modal.
+        })
+        .catch((error) => {
+            console.error("Error adding document: ", error);
+            alert("Failed to add courier.");
+        });
+});
+
 
 function exportToCSV() {
   db.collection("couriers").get().then((querySnapshot) => {
@@ -64,12 +181,8 @@ function exportToCSV() {
     querySnapshot.forEach((doc) => {
       const d = doc.data();
       rows.push([
-        d.requestId || "",
-        d.vendorName || "",
-        d.courierName || "",
-        d.trackingId || "",
-        d.totalQuantity || 0,
-        d.quantityReceived || 0
+        d.requestId || "", d.vendorName || "", d.courierName || "",
+        d.trackingId || "", d.totalQuantity || 0, d.quantityReceived || 0
       ]);
     });
 
@@ -110,13 +223,9 @@ function renderTable(couriers) {
 
 function deleteCourier(id) {
   if (!confirm("Are you sure you want to delete this entry?")) return;
-  // This is a mock function. Replace with your actual Firebase call.
   console.log("Deleting document with id:", id);
   // Example: db.collection("couriers").doc(id).delete()
-  //   .then(() => console.log("Document deleted"))
-  //   .catch((error) => alert("Delete failed: " + error));
   alert("Item deleted (mock). See console.");
-  // Re-render table after deletion if needed.
 }
 
 // Initial render for demonstration
