@@ -1,16 +1,10 @@
-<!-- Add Export, Delete & Tabs for Operation / Procurement / Reconciliation -->
 <div class="mt-6">
   <div class="flex justify-between mb-4">
-    <div>
-      <button onclick="switchTab('operation', this)" class="tab-button bg-indigo-600 text-white px-4 py-2 rounded mr-2">Operation</button>
-      <button onclick="switchTab('procurement', this)" class="tab-button bg-gray-300 px-4 py-2 rounded mr-2">Procurement</button>
-      <button onclick="switchTab('reconciliation', this)" class="tab-button bg-gray-300 px-4 py-2 rounded">Reconciliation</button>
-    </div>
     <button onclick="exportToCSV()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Export to CSV</button>
   </div>
 
   <div id="tab-operation" class="tab-section">
-    <!-- Table will render here -->
+    <h2 class="text-xl font-semibold mb-2">Operation</h2>
     <table class="min-w-full divide-y divide-gray-200">
       <thead>
         <tr>
@@ -26,28 +20,18 @@
     </table>
   </div>
 
-  <div id="tab-procurement" class="tab-section hidden">
+  <div id="tab-procurement" class="tab-section mt-8">
+    <h2 class="text-xl font-semibold mb-2">Procurement</h2>
     <p class="text-gray-500">Procurement data (upcoming feature).</p>
   </div>
 
-  <div id="tab-reconciliation" class="tab-section hidden">
+  <div id="tab-reconciliation" class="tab-section mt-8">
+    <h2 class="text-xl font-semibold mb-2">Reconciliation</h2>
     <p class="text-gray-500">Reconciliation data (upcoming feature).</p>
   </div>
 </div>
 
 <script>
-function switchTab(tabName, button) {
-  document.querySelectorAll('.tab-section').forEach(div => div.classList.add('hidden'));
-  document.querySelector(`#tab-${tabName}`).classList.remove('hidden');
-
-  document.querySelectorAll('.tab-button').forEach(btn => {
-    btn.classList.remove('bg-indigo-600', 'text-white');
-    btn.classList.add('bg-gray-300');
-  });
-  button.classList.remove('bg-gray-300');
-  button.classList.add('bg-indigo-600', 'text-white');
-}
-
 function exportToCSV() {
   db.collection("couriers").get().then((querySnapshot) => {
     const rows = [];
@@ -102,8 +86,3 @@ function deleteCourier(id) {
     .catch((error) => alert("Delete failed: " + error));
 }
 </script>
-
-<style>
-  .tab-section { display: none; }
-  #tab-operation { display: block; }
-</style>
