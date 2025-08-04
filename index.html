@@ -1,360 +1,351 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Courier Tracker</title>
-    <!-- More reliable Tailwind CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <style>
-      /* Fallback styles in case Tailwind doesn't load */
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background-color: #f3f4f6;
-        padding: 2rem;
-        margin: 0;
-      }
-      
-      .container {
-        max-width: 1280px;
-        margin: 0 auto;
-        background: white;
-        padding: 1.5rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-      }
-      
-      .btn {
-        padding: 0.5rem 1rem;
-        border-radius: 0.25rem;
-        border: none;
-        cursor: pointer;
-        font-weight: 500;
-      }
-      
-      .btn-primary { background: #2563eb; color: white; }
-      .btn-success { background: #16a34a; color: white; }
-      .btn-danger { background: #dc2626; color: white; }
-      
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 1rem;
-      }
-      
-      th, td {
-        padding: 0.75rem;
-        text-align: left;
-        border-bottom: 1px solid #e5e7eb;
-      }
-      
-      th {
-        background-color: #f9fafb;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        color: #6b7280;
-      }
-      
-      /* Hide elements by default that are controlled by JS */
-      .hidden { display: none !important; }
-      /* Initially hide all tab sections */
-      .tab-section { display: none; }
-      /* Show the first tab by default */
-      #tab-operation { display: block; }
-      
-      .modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      
-      .modal-content {
-        background: white;
-        padding: 2rem;
-        border-radius: 0.5rem;
-        width: 90%;
-        max-width: 400px;
-      }
-      
-      .form-group {
-        margin-bottom: 1rem;
-      }
-      
-      .form-group label {
-        display: block;
-        margin-bottom: 0.25rem;
-        font-weight: 500;
-      }
-      
-      .form-group input {
-        width: 100%;
-        padding: 0.5rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.25rem;
-        box-sizing: border-box;
-      }
-      
-      .tab-button {
-        padding: 0.5rem 1rem;
-        border: none;
-        cursor: pointer;
-        background: #d1d5db;
-      }
-      
-      .tab-button.active {
-        background: #4f46e5;
-        color: white;
-      }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Courier Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-100 p-6">
 
-  <div class="container max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-    <h1 class="text-3xl font-bold mb-6">Courier Tracker</h1>
+  <h1 class="text-3xl font-bold mb-6 text-center">Courier Tracker</h1>
 
-    <div class="flex justify-between items-center mb-4">
-      <button onclick="openModal()" class="btn btn-primary bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add New Courier</button>
-      <button onclick="exportToCSV()" class="btn btn-success bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Export to CSV</button>
+  <div class="flex justify-between items-center mb-4">
+    <div class="flex space-x-4">
+      <button class="tab-button tab-active bg-blue-500 text-white px-4 py-2 rounded" onclick="switchTab('operation', this)">Operation</button>
+      <button class="tab-button bg-gray-200 px-4 py-2 rounded" onclick="switchTab('procurement', this)">Procurement</button>
+      <button class="tab-button bg-gray-200 px-4 py-2 rounded" onclick="switchTab('reconciliation', this)">Reconciliation</button>
     </div>
-
-    <div class="mb-4">
-      <button onclick="switchTab('operation', this)" class="tab-button active bg-indigo-600 text-white px-4 py-2 rounded-l-md">Operation</button>
-      <button onclick="switchTab('procurement', this)" class="tab-button bg-gray-300 px-4 py-2">Procurement</button>
-      <button onclick="switchTab('reconciliation', this)" class="tab-button bg-gray-300 px-4 py-2 rounded-r-md">Reconciliation</button>
-    </div>
-
-    <div id="tab-operation" class="tab-section">
-      <h2 class="text-xl font-semibold mb-2">Operation</h2>
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Request ID</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Courier</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tracking ID</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty (Rec / Total)</th>
-              <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="courier-table-body" class="bg-white divide-y divide-gray-200">
-             </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="tab-procurement" class="tab-section hidden">
-      <h2 class="text-xl font-semibold mb-2">Procurement</h2>
-      <p class="text-gray-500">Procurement data (upcoming feature).</p>
-    </div>
-
-    <div id="tab-reconciliation" class="tab-section hidden">
-      <h2 class="text-xl font-semibold mb-2">Reconciliation</h2>
-      <p class="text-gray-500">Reconciliation data (upcoming feature).</p>
+    <div class="flex space-x-2">
+      <button onclick="openModal()" class="bg-green-500 text-white px-4 py-2 rounded">Add Courier</button>
+      <button onclick="exportCSV()" class="bg-yellow-500 text-white px-4 py-2 rounded">Export CSV</button>
     </div>
   </div>
 
-  <div id="add-modal" class="hidden modal">
-    <div class="modal-content relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-      <div class="mt-3 text-center">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">Add New Courier</h3>
-        <form id="add-courier-form" class="mt-2 text-left">
-          <div class="form-group mb-4">
-            <label for="requestId" class="block text-sm font-medium text-gray-700">Request ID</label>
-            <input type="text" id="requestId" name="requestId" class="mt-1 p-2 w-full border rounded-md" required>
-          </div>
-          <div class="form-group mb-4">
-            <label for="vendorName" class="block text-sm font-medium text-gray-700">Vendor Name</label>
-            <input type="text" id="vendorName" name="vendorName" class="mt-1 p-2 w-full border rounded-md" required>
-          </div>
-          <div class="form-group mb-4">
-            <label for="courierName" class="block text-sm font-medium text-gray-700">Courier Name</label>
-            <input type="text" id="courierName" name="courierName" class="mt-1 p-2 w-full border rounded-md">
-          </div>
-           <div class="form-group mb-4">
-            <label for="trackingId" class="block text-sm font-medium text-gray-700">Tracking ID</label>
-            <input type="text" id="trackingId" name="trackingId" class="mt-1 p-2 w-full border rounded-md">
-          </div>
-          <div class="form-group mb-4">
-            <label for="totalQuantity" class="block text-sm font-medium text-gray-700">Total Quantity</label>
-            <input type="number" id="totalQuantity" name="totalQuantity" class="mt-1 p-2 w-full border rounded-md" required min="1">
-          </div>
-          <div class="items-center px-4 py-3">
-            <button id="submit-button" type="submit" class="btn btn-primary w-full bg-blue-500 text-white text-base font-medium rounded-md shadow-sm px-4 py-2 hover:bg-blue-600">
-              Save Courier
-            </button>
-            <button id="cancel-button" type="button" onclick="closeModal()" class="btn w-full bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm px-4 py-2 mt-2 hover:bg-gray-300">
-              Cancel
-            </button>
-          </div>
-        </form>
+  <div id="search-operation" class="mb-4">
+    <input type="text" class="form-input w-full p-2 border rounded" placeholder="Search by Request ID, Vendor, Client, Courier, or Tracking ID..." oninput="renderTable(currentTab, this.value)">
+  </div>
+  <div id="search-procurement" class="mb-4 hidden">
+    <input type="text" class="form-input w-full p-2 border rounded" placeholder="Search by Request ID, Vendor, Client, Courier, or Tracking ID..." oninput="renderTable(currentTab, this.value)">
+  </div>
+  <div id="search-reconciliation" class="mb-4 hidden">
+    <input type="text" class="form-input w-full p-2 border rounded" placeholder="Search by Request ID, Vendor, or Client Name..." oninput="renderTable(currentTab, this.value)">
+  </div>
+
+  <div id="tab-operation" class="tab-section">
+    <table class="w-full bg-white rounded shadow">
+      <thead class="bg-blue-100">
+        <tr><th class="p-2">Request ID</th><th>Vendor</th><th>Client Name</th><th>Courier</th><th>Tracking ID</th><th>Qty</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="operation-table"></tbody>
+    </table>
+  </div>
+
+  <div id="tab-procurement" class="tab-section hidden">
+    <table class="w-full bg-white rounded shadow">
+      <thead class="bg-green-100">
+        <tr><th class="p-2">Request ID</th><th>Vendor</th><th>Client Name</th><th>Courier</th><th>Tracking ID</th><th>Qty</th><th>Status</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="procurement-table"></tbody>
+    </table>
+  </div>
+
+  <div id="tab-reconciliation" class="tab-section hidden">
+    <table class="w-full bg-white rounded shadow">
+      <thead class="bg-yellow-100">
+        <tr>
+            <th class="p-2">Request ID</th>
+            <th>Vendor</th>
+            <th>Client Name</th>
+            <th>Procurement Qty</th>
+            <th>Operation Qty</th>
+            <th>Difference</th>
+        </tr>
+      </thead>
+      <tbody id="reconciliation-table"></tbody>
+    </table>
+  </div>
+
+  <div id="modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50">
+    <div class="bg-white p-6 rounded shadow w-full max-w-md">
+      <h2 class="text-xl font-bold mb-4">Add/Edit Courier</h2>
+      <input id="courierDocId" type="hidden">
+      <input id="requestId" class="form-input w-full mb-2 p-2 border rounded" placeholder="Request ID">
+      <input id="vendorName" class="form-input w-full mb-2 p-2 border rounded" placeholder="Vendor Name">
+      <input id="clientName" class="form-input w-full mb-2 p-2 border rounded" placeholder="Client Name">
+      <input id="courierName" class="form-input w-full mb-2 p-2 border rounded" placeholder="Courier Name">
+      <input id="trackingId" class="form-input w-full mb-2 p-2 border rounded" placeholder="Tracking ID">
+      <input id="totalQuantity" type="number" class="form-input w-full mb-2 p-2 border rounded" placeholder="Total Quantity">
+      <select id="tabCategory" class="form-input w-full mb-4 p-2 border rounded">
+        <option value="operation">Operation</option>
+        <option value="procurement">Procurement</option>
+      </select>
+      <div class="flex justify-end space-x-2">
+        <button onclick="closeModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
+        <button onclick="saveCourier()" class="bg-blue-600 text-white px-4 py-2 rounded">Save</button>
       </div>
     </div>
   </div>
-
-<script>
-// Check if Tailwind loaded properly
-document.addEventListener('DOMContentLoaded', function() {
-  // Simple check to see if Tailwind classes are working
-  const testElement = document.createElement('div');
-  testElement.className = 'bg-blue-500';
-  document.body.appendChild(testElement);
-  const bgColor = window.getComputedStyle(testElement).backgroundColor;
-  document.body.removeChild(testElement);
   
-  if (bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'transparent') {
-    console.warn('Tailwind CSS may not have loaded properly');
-  }
-});
+  <div id="quantityModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50">
+    <div class="bg-white p-6 rounded shadow w-full max-w-sm">
+      <h2 class="text-xl font-bold mb-4">Update Quantity</h2>
+      <input id="quantityDocId" type="hidden">
+      <div class="mb-2">
+        <strong>Request ID:</strong> <span id="qtyModalRequestId"></span>
+      </div>
+      <div class="mb-4">
+        <strong>Total Quantity:</strong> <span id="qtyModalTotalQuantity"></span>
+      </div>
+      <input id="newQuantity" type="number" class="form-input w-full mb-4 p-2 border rounded" placeholder="Enter quantity received">
+      <div class="flex justify-end space-x-2">
+        <button onclick="closeQuantityModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
+        <button onclick="saveQuantity()" class="bg-blue-600 text-white px-4 py-2 rounded">Save</button>
+      </div>
+    </div>
+  </div>
 
-// Mock Firebase 'db' for demonstration if not already configured
-const db = {
-  collection: () => ({
-    get: () => Promise.resolve({ docs: [], forEach: () => {} }),
-    doc: () => ({ delete: () => Promise.resolve() }),
-    // Add a mock 'add' function to simulate saving data
-    add: (data) => {
-        console.log("Saving to Firebase:", data);
-        return Promise.resolve({ id: `mock-${Date.now()}` });
-    }
-  })
-};
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-function openModal() {
-  document.getElementById('add-modal').classList.remove('hidden');
-}
-
-function closeModal() {
-  document.getElementById('add-modal').classList.add('hidden');
-  document.getElementById('add-courier-form').reset();
-}
-
-function switchTab(tabName, button) {
-  // Hide all tab content
-  document.querySelectorAll('.tab-section').forEach(div => div.classList.add('hidden'));
-  // Show the selected tab content
-  document.querySelector(`#tab-${tabName}`).classList.remove('hidden');
-
-  // Reset all tab button styles
-  document.querySelectorAll('.tab-button').forEach(btn => {
-    btn.classList.remove('bg-indigo-600', 'text-white', 'active');
-    btn.classList.add('bg-gray-300');
-  });
-  // Apply active styles to the clicked button
-  button.classList.remove('bg-gray-300');
-  button.classList.add('bg-indigo-600', 'text-white', 'active');
-}
-
-document.getElementById('add-courier-form').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent the form from reloading the page
-
-    const newCourier = {
-        requestId: document.getElementById('requestId').value.trim(),
-        vendorName: document.getElementById('vendorName').value.trim(),
-        courierName: document.getElementById('courierName').value.trim(),
-        trackingId: document.getElementById('trackingId').value.trim(),
-        totalQuantity: parseInt(document.getElementById('totalQuantity').value, 10),
-        quantityReceived: 0, // New entries start with 0 received
-        createdAt: new Date() // Optional: add a timestamp
+  <script>
+    // --- UPDATED: Firebase Configuration from your working file ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyDSjx-dbBVsPODUvr2Umg8VGnm_uG2eXgw",
+      authDomain: "courierportal-b6321.firebaseapp.com",
+      projectId: "courierportal-b6321",
+      storageBucket: "courierportal-b6321.firebasestorage.app",
+      messagingSenderId: "694120822474",
+      appId: "1:694120822474:web:43ddb6da2135c7aebfe633"
     };
-    
-    // Check for empty required fields
-    if(!newCourier.requestId || !newCourier.vendorName || !newCourier.totalQuantity || newCourier.totalQuantity < 1) {
-        alert("Please fill out all required fields (Request ID, Vendor Name, and Total Quantity must be at least 1).");
-        return;
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const courierCollection = db.collection("couriers");
+
+    let courierData = []; 
+    let currentTab = 'operation';
+
+    function switchTab(tabName, button) {
+      currentTab = tabName;
+      document.querySelectorAll('.tab-section').forEach(t => t.classList.add('hidden'));
+      document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+      document.querySelectorAll('[id^="search-"]').forEach(s => s.classList.add('hidden'));
+      document.getElementById(`search-${tabName}`).classList.remove('hidden');
+      document.querySelectorAll('.tab-button').forEach(b => {
+        b.classList.remove('bg-blue-500', 'text-white');
+        b.classList.add('bg-gray-200');
+      });
+      button.classList.add('bg-blue-500', 'text-white');
+      button.classList.remove('bg-gray-200');
+      renderTable(tabName, document.querySelector(`#search-${tabName} input`).value || '');
     }
 
-    // Here you would save the data to your actual Firebase database
-    db.collection("couriers").add(newCourier)
-        .then((docRef) => {
-            console.log("Document written with ID: ", docRef.id);
-            alert("Courier added successfully! (Check console for details)");
-            closeModal();
-            // In a real application, you would re-fetch the data and re-render the table
-            // For now, we just close the modal.
-        })
-        .catch((error) => {
-            console.error("Error adding document: ", error);
-            alert("Failed to add courier: " + error.message);
+    function openModal(docId = null) {
+      document.getElementById('modal').classList.remove('hidden');
+      if (docId) {
+        const c = courierData.find(courier => courier.id === docId);
+        document.getElementById('courierDocId').value = c.id;
+        document.getElementById('requestId').value = c.requestId;
+        document.getElementById('vendorName').value = c.vendorName;
+        document.getElementById('clientName').value = c.clientName;
+        document.getElementById('courierName').value = c.courierName;
+        document.getElementById('trackingId').value = c.trackingId;
+        document.getElementById('totalQuantity').value = c.totalQuantity;
+        document.getElementById('tabCategory').value = c.category;
+      } else {
+        ['courierDocId','requestId','vendorName','clientName','courierName','trackingId','totalQuantity'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('tabCategory').value = currentTab;
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.add('hidden');
+    }
+    
+    function openQuantityModal(docId) {
+        const courier = courierData.find(c => c.id === docId);
+        document.getElementById('quantityDocId').value = docId;
+        document.getElementById('qtyModalRequestId').innerText = courier.requestId;
+        document.getElementById('qtyModalTotalQuantity').innerText = courier.totalQuantity;
+        document.getElementById('newQuantity').value = courier.quantityReceived;
+        document.getElementById('quantityModal').classList.remove('hidden');
+    }
+    
+    function closeQuantityModal() {
+        document.getElementById('quantityModal').classList.add('hidden');
+    }
+
+    function saveQuantity() {
+        const docId = document.getElementById('quantityDocId').value;
+        if (!docId) return;
+
+        const newQty = parseInt(document.getElementById('newQuantity').value, 10);
+        const courier = courierData.find(c => c.id === docId);
+        const totalQty = parseInt(courier.totalQuantity, 10);
+
+        if (isNaN(newQty) || newQty < 0) {
+            return alert("Please enter a valid non-negative number.");
+        }
+
+        let newStatus = 'Live';
+        if (newQty <= 0) {
+            newStatus = 'Live';
+        } else if (newQty >= totalQty) {
+            newStatus = 'Completed';
+        } else {
+            newStatus = 'Partially Received';
+        }
+
+        courierCollection.doc(docId).update({
+            quantityReceived: newQty,
+            status: newStatus
+        }).then(() => {
+            console.log("Quantity updated successfully!");
+            closeQuantityModal();
+        }).catch(error => console.error("Error updating document: ", error));
+    }
+
+    function saveCourier() {
+        const docId = document.getElementById('courierDocId').value;
+        const courier = {
+            requestId: document.getElementById('requestId').value,
+            vendorName: document.getElementById('vendorName').value,
+            clientName: document.getElementById('clientName').value,
+            courierName: document.getElementById('courierName').value,
+            trackingId: document.getElementById('trackingId').value,
+            totalQuantity: parseInt(document.getElementById('totalQuantity').value, 10) || 0,
+            category: document.getElementById('tabCategory').value
+        };
+
+        if(!courier.requestId || !courier.clientName) {
+            return alert("Request ID and Client Name are required.");
+        }
+
+        if (docId) { 
+            courierCollection.doc(docId).update(courier)
+                .then(() => console.log("Document successfully updated!"))
+                .catch(error => console.error("Error updating document: ", error));
+        } else { 
+            courier.quantityReceived = 0;
+            courier.status = 'Live';
+            courier.reconciled = false; // This field is no longer used for display
+            courierCollection.add(courier)
+                .then(() => console.log("Document successfully written!"))
+                .catch(error => console.error("Error writing document: ", error));
+        }
+        closeModal();
+    }
+
+    function deleteCourier(docId) {
+      if (confirm("Are you sure?")) {
+        courierCollection.doc(docId).delete()
+            .then(() => console.log("Document successfully deleted!"))
+            .catch(error => console.error("Error removing document: ", error));
+      }
+    }
+
+    // --- UPDATED: renderTable function with new Reconciliation logic ---
+    function renderTable(tab, query) {
+        const lowerQuery = query.toLowerCase();
+        const tbody = document.getElementById(`${tab}-table`);
+        let html = '';
+
+        if (tab === 'operation' || tab === 'procurement') {
+            const filteredData = courierData.filter(c => 
+                c.category === tab &&
+                (c.requestId.toLowerCase().includes(lowerQuery) || 
+                 c.vendorName.toLowerCase().includes(lowerQuery) || 
+                 (c.clientName && c.clientName.toLowerCase().includes(lowerQuery)) ||
+                 c.courierName.toLowerCase().includes(lowerQuery) || 
+                 c.trackingId.toLowerCase().includes(lowerQuery))
+            );
+
+            html = filteredData.map(c => `
+                <tr class="border-t hover:bg-gray-50">
+                    <td class="p-2">${c.requestId}</td>
+                    <td>${c.vendorName}</td>
+                    <td>${c.clientName}</td>
+                    <td>${c.courierName}</td>
+                    <td>${c.trackingId}</td>
+                    <td>${c.quantityReceived}/${c.totalQuantity}</td>
+                    ${tab === 'procurement' ? `<td class="font-medium ${c.status === 'Completed' ? 'text-green-600' : c.status === 'Partially Received' ? 'text-yellow-600' : ''}">${c.status}</td>` : ''}
+                    <td class="p-2">
+                        <button onclick="openModal('${c.id}')" class="text-blue-600 hover:underline">Edit</button> |
+                        <button onclick="deleteCourier('${c.id}')" class="text-red-600 hover:underline">Delete</button> |
+                        <button onclick="openQuantityModal('${c.id}')" class="text-green-600 hover:underline">Update Qty</button>
+                    </td>
+                </tr>`).join('');
+        
+        } else if (tab === 'reconciliation') {
+            const procurementItems = courierData.filter(c => c.category === 'procurement');
+            const operationItems = courierData.filter(c => c.category === 'operation');
+            let reconciledData = [];
+
+            procurementItems.forEach(pItem => {
+                const oItem = operationItems.find(o => o.requestId === pItem.requestId);
+                if (oItem) {
+                    reconciledData.push({
+                        requestId: pItem.requestId,
+                        vendorName: pItem.vendorName,
+                        clientName: pItem.clientName, // Including client name
+                        procurementQty: pItem.quantityReceived || 0,
+                        operationQty: oItem.quantityReceived || 0,
+                        difference: (pItem.quantityReceived || 0) - (oItem.quantityReceived || 0)
+                    });
+                }
+            });
+
+            const filteredReconciled = reconciledData.filter(r => 
+                r.requestId.toLowerCase().includes(lowerQuery) ||
+                r.vendorName.toLowerCase().includes(lowerQuery) ||
+                (r.clientName && r.clientName.toLowerCase().includes(lowerQuery))
+            );
+
+            html = filteredReconciled.map(r => `
+                <tr class="border-t hover:bg-gray-50">
+                    <td class="p-2">${r.requestId}</td>
+                    <td>${r.vendorName}</td>
+                    <td>${r.clientName}</td>
+                    <td>${r.procurementQty}</td>
+                    <td>${r.operationQty}</td>
+                    <td class="font-bold ${r.difference !== 0 ? 'text-red-500' : 'text-green-500'}">${r.difference}</td>
+                </tr>`).join('');
+        }
+
+        tbody.innerHTML = html || `<tr><td colspan="8" class="text-center text-gray-500 p-4">No records found</td></tr>`;
+    }
+
+
+    function exportCSV() {
+        if(courierData.length === 0) {
+            alert("No data to export.");
+            return;
+        }
+        let csv = "Request ID,Vendor Name,Client Name,Courier Name,Tracking ID,Total Quantity,Quantity Received,Category,Status\n";
+        courierData.forEach(c => {
+            csv += `${c.requestId || ''},${c.vendorName || ''},${c.clientName || ''},${c.courierName || ''},${c.trackingId || ''},${c.totalQuantity || 0},${c.quantityReceived || 0},${c.category || ''},${c.status || ''}\n`;
         });
-});
+        const blob = new Blob([csv], {type: 'text/csv'});
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = "courier_data.csv";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
 
-function exportToCSV() {
-  db.collection("couriers").get().then((querySnapshot) => {
-    const rows = [];
-    rows.push(["Request ID", "Vendor Name", "Courier Name", "Tracking ID", "Total Qty", "Qty Received"]);
-
-    querySnapshot.forEach((doc) => {
-      const d = doc.data();
-      rows.push([
-        d.requestId || "", d.vendorName || "", d.courierName || "",
-        d.trackingId || "", d.totalQuantity || 0, d.quantityReceived || 0
-      ]);
+    courierCollection.onSnapshot(snapshot => {
+        courierData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderTable(currentTab, document.querySelector(`#search-${currentTab} input`).value || '');
+    }, error => {
+        console.error("Error fetching data from Firestore: ", error);
     });
 
-    if (rows.length <= 1) {
-        alert("No data to export.");
-        return;
-    }
-
-    let csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "courier_data.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }).catch((error) => {
-    console.error("Error exporting CSV:", error);
-    alert("Failed to export CSV.");
-  });
-}
-
-function renderTable(couriers) {
-  const tableBody = document.getElementById('courier-table-body');
-  if (!tableBody) {
-    console.error("Table body element not found");
-    return;
-  }
-  
-  if (couriers.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-gray-500">No records found.</td></tr>`;
-    return;
-  }
-  
-  tableBody.innerHTML = couriers.map(courier => `
-    <tr class="hover:bg-gray-50">
-      <td class="px-4 py-4 whitespace-nowrap">${courier.requestId || 'N/A'}</td>
-      <td class="px-4 py-4 whitespace-nowrap">${courier.vendorName || 'N/A'}</td>
-      <td class="px-4 py-4 whitespace-nowrap">${courier.courierName || 'N/A'}</td>
-      <td class="px-4 py-4 whitespace-nowrap">${courier.trackingId || 'N/A'}</td>
-      <td class="px-4 py-4 whitespace-nowrap">${courier.quantityReceived || 0} / ${courier.totalQuantity || 0}</td>
-      <td class="px-4 py-4 whitespace-nowrap text-right">
-        <button onclick="deleteCourier('${courier.id}')" class="btn btn-danger text-red-600 hover:text-red-800">Delete</button>
-      </td>
-    </tr>`).join('');
-}
-
-function deleteCourier(id) {
-  if (!confirm("Are you sure you want to delete this entry?")) return;
-  console.log("Deleting document with id:", id);
-  // Example: db.collection("couriers").doc(id).delete()
-  alert("Item deleted (mock). See console.");
-}
-
-// Initial render for demonstration
-document.addEventListener('DOMContentLoaded', function() {
-  renderTable([]); // Renders the "No records found" message initially
-});
-</script>
-
+    document.addEventListener('DOMContentLoaded', () => {
+      switchTab('operation', document.querySelector('.tab-button'));
+    });
+  </script>
 </body>
 </html>
